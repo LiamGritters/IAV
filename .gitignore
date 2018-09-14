@@ -1,0 +1,6 @@
+### Eclipse Hidden Files ###
+# Eclipse Core      
+.project
+
+# CDT-specific (C/C++ Development Tooling)
+.cproject
