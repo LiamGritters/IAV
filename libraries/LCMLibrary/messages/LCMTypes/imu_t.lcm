@@ -1,0 +1,15 @@
+package exlcm;
+
+struct imu_t
+{
+    int64_t  timestamp;
+    string   name;
+    boolean  enabled;
+    
+	float roll;
+	float pitch; 
+	float yaw; 
+	float xAcceleration; 
+	float yAcceleration;
+	float zAcceleration;
+}

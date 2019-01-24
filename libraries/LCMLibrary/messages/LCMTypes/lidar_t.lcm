@@ -1,0 +1,11 @@
+package exlcm; 
+
+struct lidar_t
+{
+	int64_t  timestamp;
+	string   name;
+	boolean  enabled;
+	float fov; 
+	int16_t num_ranges; 
+	float ranges[num_ranges]; 
+}

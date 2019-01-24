@@ -1,0 +1,11 @@
+package exlcm;
+
+struct controller_t
+{
+    int64_t  timestamp;
+    float velocity;
+    float turningRate; 
+	int8_t speedLevel; 
+    string   name;
+    boolean  enabled;
+}
