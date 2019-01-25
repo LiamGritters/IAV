@@ -14,15 +14,14 @@ SDIR=./src
 BIN=./bin
 BUILD=./build
 IDIR =./include
-SEN = /home/liam/workspace/IAV/components/SensorManager/
+SEN = $(IAV_WORKSPACE)/components/SensorManager
 
 ############### FLAGS ###############
 
-CFLAGS  = -std=c++11 -g -Wall -O2 -I$(IDIR)
-CFLAGS += -I/home/liam/workspace/IAV/libraries/LCMLibrary/messages/exlcm
-CFLAGS += -I/usr/local -I/usr/include
-CFLAGS += -I/home/liam/workspace/IAV/libraries/LCMLibrary/include
-CFLAGS += -I/home/liam/workspace/IAV/components/SensorManager/include
+CFLAGS  = -std=c++11 -g -Wall -O2 -I$(IDIR) $(STANDARD_INC)
+CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/exlcm
+CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/include
+CFLAGS += -I$(IAV_WORKSPACE)/components/SensorManager/include
 
 LDFLAGS=  -llcm -lpthread 
 

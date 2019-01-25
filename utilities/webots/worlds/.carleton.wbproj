@@ -10,7 +10,7 @@ viewpointLocked: 0
 orthographicViewHeight: 1
 textFiles: 0 "controllers/WebotsIAVController/src/WebotsIAVController.cpp"
 globalOptionalRendering: LidarRaysPaths
-renderingDevicePerspectives: robot:MultiSense S21 left camera;0;0.0996094;0;0
 renderingDevicePerspectives: robot:cameraLeft;0;1;0;0.123472
 renderingDevicePerspectives: robot:MultiSense S21 right camera;0;0.0996094;0;0
 renderingDevicePerspectives: robot:cameraRight;0;1;0;0.123472
+renderingDevicePerspectives: robot:MultiSense S21 left camera;0;0.0996094;0;0

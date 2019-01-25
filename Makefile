@@ -3,8 +3,8 @@
 ############### MAKE ###############
 
 all:	
-	$(MAKE) -C ./components
 	$(MAKE) -C ./libraries
+	$(MAKE) -C ./components
 
 	
 ############### CLEAN ###############
@@ -12,5 +12,5 @@ all:
 .PHONY: clean
 
 clean:
-	$(MAKE) clean -C ./components
 	$(MAKE) clean -C ./libraries
+	$(MAKE) clean -C ./components

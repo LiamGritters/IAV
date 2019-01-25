@@ -33,16 +33,15 @@ CFLAGS = -Wno-unused-result -std=c++11
 ###
 ### ---- Linked libraries ----
 ### if your program needs additional libraries:
-INCLUDE  = -I/home/liam/workspace/IAV/utilities/webots/controllers/WebotsIAVController/include/
-INCLUDE += -I/usr/include/opencv2
-INCLUDE += -I/home/liam/workspace/IAV/libraries/UtilityFunctions/include/
-INCLUDE += -I/home/liam/workspace/IAV/libraries/LCMLibrary/messages/exlcm 
-INCLUDE += -I/home/liam/workspace/IAV/libraries/LCMLibrary/include
-INCLUDE += -I/home/liam/workspace/IAV/components/SensorManager/include
-
+INCLUDE += -I/usr/include/opencv2 -I/usr/include
+INCLUDE  = -I$(IAV_WORKSPACE)/utilities/webots/controllers/WebotsIAVController/include/
+INCLUDE += -I$(IAV_WORKSPACE)/libraries/UtilityFunctions/include/
+INCLUDE += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/exlcm 
+INCLUDE += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/include
+INCLUDE += -I$(IAV_WORKSPACE)/components/SensorManager/include
 
 LIBRARIES  = -L/usr/lib/x86_64-linux-gnu -L/usr/lib -llcm -lopencv_imgproc -lopencv_core -lopencv_highgui 
-LIBRARIES += -L/home/liam/workspace/IAV/libraries/UtilityFunctions/bin -lUtilityFunctions -lpthread
+LIBRARIES += -L$(IAV_WORKSPACE)/libraries/UtilityFunctions/bin -lUtilityFunctions -lpthread
 ###
 ### ---- Linking options ----
 ### if special linking flags are needed:

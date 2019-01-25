@@ -16,9 +16,9 @@
 #include "GPS.hpp"
 #include "IMU.hpp"
 
-#include <highgui/highgui.hpp>
-#include <core/core.hpp>
-#include <imgproc/imgproc.hpp>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include <webots/Robot.hpp>
 #include <webots/InertialUnit.hpp>
