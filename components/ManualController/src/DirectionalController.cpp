@@ -64,6 +64,10 @@ DirectionalController::controllerThread(DirectionalController *controller)
     keypad(stdscr, TRUE);
     noecho();
 
+    printw("Press the up and down arrows to change speed \n");
+    printw("Press the left and right arrows to steer \n");
+    printw("Press s to stop the vehicle and q to quit the controller \n");
+
     while(controller->_isRunning)
     {
         c = getch();
