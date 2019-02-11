@@ -113,6 +113,7 @@ WebotsSensorManager::Initialize(webots::Robot* robot)
         if(_lidarData.numLayers > 0)
         {
             _lidarData.scanlines.resize(_lidarData.numLayers);
+            _lidarData.collapsedScanline.ranges.resize(_lidarData.numLayers);
             for(auto &scan : _lidarData.scanlines)
             {
                 scan.ranges.resize(_lidarData.numRanges);
