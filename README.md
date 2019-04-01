@@ -9,6 +9,7 @@ This is the official github for the Carleton Integrated Autonomous Vehicle (IAV)
 - build-essential
 - libglib2.0-dev
 - libncurses5-dev
+- libudev-dev
 
 Install these dependencies before attempting to build 
 ```
