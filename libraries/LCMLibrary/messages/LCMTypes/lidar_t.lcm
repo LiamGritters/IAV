@@ -1,4 +1,4 @@
-package exlcm; 
+package iav_lcm;
 
 struct lidar_t
 {

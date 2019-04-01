@@ -4,7 +4,7 @@
 
 all:
 	$(MAKE) -C ./UtilityFunctions
-
+	$(MAKE) -C ./PIDController
 	
 ############### CLEAN ###############
 

@@ -15,7 +15,7 @@
 #include "WebotsSensorManager.hpp"
 #include "WebotsControlsManager.hpp"
 
-#include "controller_t.hpp"
+#include "vehicle_controller_demand_t.hpp"
 
 #include <lcm/lcm-cpp.hpp>
 
@@ -46,7 +46,7 @@ private:
 
     bool setupNetwork();
 
-    void handleMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::controller_t *msg);
+    void handleMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::vehicle_controller_demand_t *msg);
 
 private:
 

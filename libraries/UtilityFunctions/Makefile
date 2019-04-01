@@ -40,5 +40,5 @@ $(BIN)/$(TARGET).a: $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -r $(BUILD)/* 
-	rm -r $(BIN)/*  
+	rm -rf $(BUILD)/* 
+	rm -rf $(BIN)/*  

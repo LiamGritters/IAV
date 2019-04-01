@@ -43,7 +43,7 @@ PublishData(lcm::LCM *lcm, WebotsSensorManager *sensors, std::atomic<bool>& isRu
 void
 PublishLidarMessage(lcm::LCM *lcm, WebotsSensorManager *sensors)
 {
-    exlcm::lidar_t msg;
+    iav_lcm::lidar_t msg;
     msg.enabled = true;
     msg.name = "lidar";
 
@@ -66,7 +66,7 @@ PublishLidarMessage(lcm::LCM *lcm, WebotsSensorManager *sensors)
 void
 PublishIMUMessage(lcm::LCM *lcm, WebotsSensorManager *sensors)
 {
-    exlcm::imu_t msg;
+    iav_lcm::imu_t msg;
     msg.enabled = true;
     msg.name = "imu";
 
@@ -88,7 +88,7 @@ PublishIMUMessage(lcm::LCM *lcm, WebotsSensorManager *sensors)
 void
 PublishGPSMessage(lcm::LCM *lcm, WebotsSensorManager *sensors)
 {
-    exlcm::gps_t msg;
+    iav_lcm::gps_t msg;
     msg.enabled = true;
     msg.name = "gps";
 

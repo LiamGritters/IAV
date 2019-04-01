@@ -30,9 +30,20 @@ constexpr int EncoderResolution = 1024; //Number of ticks
 constexpr float WheelDiameter = 0.17;
 constexpr float WheelBase = 1.2;
 
+//Motor Constants
+constexpr float GearReduction = 3.f/1.f;
+constexpr float RPMToRadsPerSec = 2.f*M_PI/60.f;
+constexpr float WheelRadius = 0.4572; // meters
+
 /****************************************
  * CLASS IMPLEMENTATION
  ****************************************/
+
+float
+convertVehicleSpeedToMotorSpeed(float vehicleSpeed)
+{
+    return ((1.f/(GearReduction*RPMToRadsPerSec)) / (WheelRadius)) * vehicleSpeed;
+}
 
 WebotsControlsManager::WebotsControlsManager()
 {
@@ -46,6 +57,7 @@ WebotsControlsManager::WebotsControlsManager()
     this->_rightMotor = nullptr;
     this->_leftEncoder = nullptr;
     this->_rightEncoder = nullptr;
+    this->_time = 0.0;
 }
 
 WebotsControlsManager::~WebotsControlsManager()
@@ -115,7 +127,7 @@ WebotsControlsManager::SetRightMotorVelocity(float velocity)
     if(_rightMotor)
     {
         _rightMotor->setPosition(INFINITY);
-        _rightMotor->setVelocity(velocity);
+        _rightMotor->setVelocity(convertVehicleSpeedToMotorSpeed(velocity));
     }
     else
     {
@@ -129,7 +141,7 @@ WebotsControlsManager::SetLeftMotorVelocity(float velocity)
     if(_leftMotor)
     {
         _leftMotor->setPosition(INFINITY);
-        _leftMotor->setVelocity(velocity);
+        _leftMotor->setVelocity(convertVehicleSpeedToMotorSpeed(velocity));
     }
     else
     {

@@ -12,12 +12,18 @@
 #include "DirectionalController.hpp"
 
 #include "LCMChannels.hpp"
-#include "controller_t.hpp"
+#include "vehicle_controller_demand_t.hpp"
 
 #include <lcm/lcm-cpp.hpp>
 #include <string>
 #include <chrono>
 #include <iostream>
+
+/****************************************
+ * CONSTANTS
+ ****************************************/
+
+constexpr float DefaultVelocityRate = 10.0;
 
 /****************************************
  * Main
@@ -33,15 +39,14 @@ int main()
 
     if(!lcm.good()) return 1;
 
-    exlcm::controller_t msg;
+    iav_lcm::vehicle_controller_demand_t msg;
     msg.enabled = true;
     msg.name = "controller";
 
     while(controller.IsRunning())
     {
-        msg.speedLevel = controller.GetSpeedLevel();
-        msg.turningRate = controller.GetTurningRate();
-        msg.velocity = controller.GetVelocity();
+        msg.turningAngle = controller.GetTurningRate()*DefaultVelocityRate;
+        msg.velocity = controller.GetSpeedLevel()*DefaultVelocityRate;
 
         lcm.publish(ControllerChannel, &msg);
 

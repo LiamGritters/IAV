@@ -19,7 +19,7 @@ SEN = $(IAV_WORKSPACE)/components/SensorManager
 ############### FLAGS ###############
 
 CFLAGS  = -std=c++11 -g -Wall -O2 -I$(IDIR) $(STANDARD_INC)
-CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/exlcm
+CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/iav_lcm
 CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/include
 CFLAGS += -I$(IAV_WORKSPACE)/components/SensorManager/include
 

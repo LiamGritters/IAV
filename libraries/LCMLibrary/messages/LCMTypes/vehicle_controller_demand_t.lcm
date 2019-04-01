@@ -1,11 +1,10 @@
-package exlcm;
+package iav_lcm;
 
-struct controller_t
+struct vehicle_controller_demand_t
 {
     int64_t  timestamp;
     float velocity;
-    float turningRate; 
-	int8_t speedLevel; 
+    float turningAngle;  
     string   name;
     boolean  enabled;
 }

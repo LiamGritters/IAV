@@ -36,7 +36,7 @@ CFLAGS = -Wno-unused-result -std=c++11
 INCLUDE += -I/usr/include/opencv2 -I/usr/include
 INCLUDE  = -I$(IAV_WORKSPACE)/utilities/webots/controllers/WebotsIAVController/include/
 INCLUDE += -I$(IAV_WORKSPACE)/libraries/UtilityFunctions/include/
-INCLUDE += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/exlcm 
+INCLUDE += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/iav_lcm 
 INCLUDE += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/include
 INCLUDE += -I$(IAV_WORKSPACE)/components/SensorManager/include
 

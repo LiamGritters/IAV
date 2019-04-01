@@ -64,9 +64,9 @@ private:
 
     bool setupNetwork(SensorFlags initializeSensorFlag);
 
-    void handleLidarMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::lidar_t *msg);
-    void handleGPSMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::gps_t *msg);
-    void handleIMUMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::imu_t *msg);
+    void handleLidarMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::lidar_t *msg);
+    void handleGPSMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::gps_t *msg);
+    void handleIMUMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::imu_t *msg);
 
 private:
 

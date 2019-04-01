@@ -92,7 +92,7 @@ SensorManager::setupNetwork(SensorFlags initializeSensorFlag)
 }
 
 void
-SensorManager::handleLidarMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::lidar_t *msg)
+SensorManager::handleLidarMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::lidar_t *msg)
 {
     if(msg->enabled && this->_isRunning)
     {
@@ -106,7 +106,7 @@ SensorManager::handleLidarMessage(const lcm::ReceiveBuffer *rbuf, const std::str
 }
 
 void
-SensorManager::handleGPSMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::gps_t *msg)
+SensorManager::handleGPSMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::gps_t *msg)
 {
     if(msg->enabled && this->_isRunning)
     {
@@ -131,7 +131,7 @@ SensorManager::handleGPSMessage(const lcm::ReceiveBuffer *rbuf, const std::strin
 }
 
 void
-SensorManager::handleIMUMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::imu_t *msg)
+SensorManager::handleIMUMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::imu_t *msg)
 {
     if(msg->enabled && this->_isRunning)
     {

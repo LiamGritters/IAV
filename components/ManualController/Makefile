@@ -18,7 +18,7 @@ IDIR =./include
 ############### FLAGS ###############
 
 CFLAGS  = -std=c++11 -g -Wall -O2 -I$(IDIR) $(STANDARD_INC)
-CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/exlcm
+CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/messages/iav_lcm
 CFLAGS += -I$(IAV_WORKSPACE)/libraries/LCMLibrary/include
 
 LDFLAGS= -lncurses -llcm -lpthread
@@ -47,5 +47,5 @@ $(BIN)/$(TARGET): $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -r $(BUILD)/* 
-	rm -r $(BIN)/*  
+	rm -rf $(BUILD)/* 
+	rm -rf $(BIN)/*  

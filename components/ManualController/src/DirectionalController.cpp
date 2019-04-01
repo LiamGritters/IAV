@@ -26,7 +26,7 @@
 
 DirectionalController::DirectionalController()
 {
-    this->_velocity = 0.0;
+//    this->_velocity = 0.0;
     this->_turningRate = 0.0;
     this->_isRunning = false;
     this->_speedLevel = 3; //Default Speed level

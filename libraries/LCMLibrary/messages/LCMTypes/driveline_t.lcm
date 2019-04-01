@@ -1,0 +1,11 @@
+package iav_lcm;
+
+struct driveline_t
+{
+    int64_t  timestamp;
+    float speed;
+    float wheelAngle; 
+    float turningRate;  
+    string   name;
+    boolean  enabled;
+}

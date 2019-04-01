@@ -19,21 +19,28 @@ SEN = $(IAV_WORKSPACE)/components/SensorManager
 ############### FLAGS ###############
 
 CFLAGS  = -std=c++11 -g -Wall -O2 -I$(IDIR) $(STANDARD_INC)
-CFLAGS += -I/home/liam/can4linux/can4linux
+CFLAGS += -I$(IAV_WORKSPACE)/libraries/PIDController/include
+CFLAGS += -I$(IAV_WORKSPACE)/drivers/SevconGen4MotorController/include
 
-LDFLAGS= -lpthread 
+LDFLAGS= -lpthread -lPIDController
 
 ############### LIBRARIES ###############
 
 LIBS  = -L/lib/x86_64-linux-gnu/ 
 LIBS += -L/usr/local/lib
+LIBS += -L$(IAV_WORKSPACE)/libraries/PIDController/bin
 
 ############### OBJECTS ###############
 
 DEPS = $(patsubst %.hpp,$(IDIR)/%.d,$(wildcard *.hpp))
 OBJ = $(patsubst $(SDIR)/%.cpp, $(BUILD)/%.o, $(wildcard $(SDIR)/*.cpp))
 
+OBJ += $(patsubst ../src/%.cpp, $(BUILD)/%.o, $(wildcard ../src/*.cpp))
+
 ############### BUILD ###############
+
+$(BUILD)/%.o: ../src/%.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BUILD)/%.o: $(SDIR)/%.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

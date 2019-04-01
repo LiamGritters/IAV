@@ -77,6 +77,10 @@ WebotsSystemInterface::Stop()
     {
         _robotProcessThread.join();
     }
+    if(_publishThread.joinable())
+    {
+        _publishThread.join();
+    }
 }
 
 bool
@@ -108,11 +112,9 @@ WebotsSystemInterface::robotProcess(WebotsSystemInterface *sysInterface)
 }
 
 void
-WebotsSystemInterface::handleMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const exlcm::controller_t *msg)
+WebotsSystemInterface::handleMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::vehicle_controller_demand_t *msg)
 {
-    const float DefaultSpeed = 10.0;
-
-    this->_leftSpeed = (DefaultSpeed * msg->speedLevel) + (msg->turningRate * DefaultSpeed);
-    this->_rightSpeed = (DefaultSpeed * msg->speedLevel) - (msg->turningRate * DefaultSpeed);
+    this->_leftSpeed = (msg->velocity) + (msg->turningAngle);
+    this->_rightSpeed = (msg->velocity) - (msg->turningAngle);
 }
 
