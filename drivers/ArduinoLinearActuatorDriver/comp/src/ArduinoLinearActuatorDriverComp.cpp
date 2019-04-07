@@ -36,11 +36,11 @@ int main(int argc, char* argv[])
     if(!driver.Initialize(DeviceFileName)) return -1;
     driver.Start();
 
-    int value  = atoi(argv[1]);
+    float value  = atof(argv[1]);
 
     while(driver.IsRunning())
     {
-        std::string msg = "<sendingData," + std::to_string(value) + ">";
+        std::string msg = "<act," + std::to_string(value) + ">";
         driver.SendData(msg);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(200));

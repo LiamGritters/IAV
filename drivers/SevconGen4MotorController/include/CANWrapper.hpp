@@ -60,7 +60,7 @@ public:
 
     IAV::CANstate GetMotorControllerState() const {return _state;};
 
-    int ReadAngularVelocity();
+    int GetAngularVelocity() const {return _angularVelocity;};
 
 private:
 
@@ -75,6 +75,9 @@ private:
     void sevconLogin();
     void forceToOP();
     void initializeMotorController();
+    void rpdoFakeOut();
+
+    void readAngularVelocity();
 
     std::vector<uint8_t> convertToHex(std::string string);
     std::vector<uint8_t> convertToHex(int value);
@@ -86,6 +89,7 @@ private:
 public:
 
     bool _isRunning;
+    bool _stateSet;
 
     std::string _deviceName;
 
@@ -101,6 +105,8 @@ public:
     ifreq _ifr;
 
     int64_t _timeout;
+
+    float _angularVelocity;
 };
 
 #endif /* DRIVERS_SEVCONGEN4MOTORCONTROLLER_COMP_INCLUDE_CANWRAPPER_HPP_ */

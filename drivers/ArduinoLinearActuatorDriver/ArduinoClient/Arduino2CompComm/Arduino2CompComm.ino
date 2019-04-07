@@ -15,6 +15,7 @@ boolean newDataFromPC = false;
 
 char messageFromPC[buffSize] = {0};
 int TargetPOS = 0;
+bool newTargetFlag = false; 
 
 unsigned long curMillis;
 
@@ -23,13 +24,13 @@ unsigned long replyToPCinterval = 1000;
 
 long CurrentPOS = 0;
 
-const int Accuracy = 20; 
+const int Accuracy = 10; 
 
-const float LinearActuatorZeroPosition = 20.0; // [cm]
-const float LinearActuatorExtended = 25.4; //[cm]
-const float LinearActuatorRetracted = 5.5; //[cm]
+const float LinearActuatorZeroPosition = 0.20; // [m]
+const float LinearActuatorExtended = 0.25; //[m]
+const float LinearActuatorRetracted = 0.068; //[m]
 const float PotentiometerExtended = 930; // reading from potentiometer
-const float PotentiometerRetracted = 30; // reading from potentiometer
+const float PotentiometerRetracted = 58; // reading from potentiometer
 
 //initializes the sensor, output,intput pins
 int POT = A0; //actuator pot
@@ -65,13 +66,10 @@ void setup() {
 
 void loop() {
   curMillis = millis();
-//  CurrentPOS = analogRead(POT);// read the analog sensor
 
   getDataFromPC();
 
   moveActuator(TargetPOS);
-
-  CurrentPOS = analogRead(POT);// read the analog sensor
   
   replyToPC();
 }
@@ -82,7 +80,8 @@ void getDataFromPC() {
 
     // receive data from PC and save it into inputBuffer
     
-  if(Serial.available() > 0) {
+//  if(Serial.available() > 0) {
+  while(Serial.available() > 0) {
 
     char x = Serial.read();
 
@@ -93,6 +92,7 @@ void getDataFromPC() {
       newDataFromPC = true;
       inputBuffer[bytesRecvd] = 0;
       parseData();
+      if(Serial.available() < 12) break;
     }
     
     if(readInProgress) {
@@ -122,9 +122,26 @@ void parseData() {
   strcpy(messageFromPC, strtokIndx); // copy it to messageFromPC
   
   strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-  const int targetUncorrectedPosition = atoi(strtokIndx);     // convert this part to an integer
-  const int PosInCM = targetUncorrectedPosition + LinearActuatorZeroPosition; 
-  TargetPOS = (((PosInCM - LinearActuatorExtended) * (PotentiometerRetracted - PotentiometerExtended)) / (LinearActuatorRetracted - LinearActuatorExtended)) + PotentiometerExtended;
+  const float targetUncorrectedPosition = atof(strtokIndx);     // convert this part to an integer
+  const float PosInCM = targetUncorrectedPosition + LinearActuatorZeroPosition; 
+  const int newTargetPOS = (((PosInCM - LinearActuatorExtended) * (PotentiometerRetracted - PotentiometerExtended)) / (LinearActuatorRetracted - LinearActuatorExtended)) + PotentiometerExtended;
+
+  if(newTargetPOS != TargetPOS) 
+  {
+    TargetPOS = newTargetPOS; 
+    newTargetFlag = true; 
+  }
+  else
+  {
+    newTargetFlag = false;   
+  }
+}
+
+//=============
+
+float convertToMeters(int CurrentPosition) {
+  const float uncorrectedPositionMeters = (((CurrentPosition - PotentiometerExtended) * (LinearActuatorRetracted - LinearActuatorExtended)) / (PotentiometerRetracted - PotentiometerExtended)) + LinearActuatorExtended;
+  return (uncorrectedPositionMeters - LinearActuatorZeroPosition);
 }
 
 //=============
@@ -138,38 +155,47 @@ void replyToPC() {
     Serial.print(" target ");
     Serial.print(TargetPOS);
     Serial.print(" position:");
-    Serial.print(CurrentPOS);
+    Serial.print(convertToMeters(CurrentPOS));
     Serial.print(" Time ");
     Serial.print(curMillis >> 9); // divide by 512 is approx = half-seconds
     Serial.println(">");
 
-    delay(100);
+    delay(10);
   }
 }
 
 void moveActuator(int TargetPosition)
 {  
-  if (newDataFromPC) 
+  if(newDataFromPC && newTargetFlag) 
   {
-    if(abs(TargetPosition - CurrentPOS) > Accuracy) 
-    {
+    unsigned long time = millis();
+    CurrentPOS = analogRead(POT);// read the analog sensor
+    while(abs(TargetPosition - CurrentPOS) > Accuracy) 
+    { 
       if(TargetPosition > CurrentPOS)
       {
         digitalWrite(DIR, LOW); //extends
         digitalWrite(PWM,HIGH);
-        delay(100);
+        delay(10);
       }
       else
       {
         digitalWrite(DIR, HIGH); //retracts
-        digitalWrite(PWM,HIGH);  
-        delay(100);
+        digitalWrite(PWM,HIGH);
+        delay(10);
       }
-    }   
-    else //At setpoint 
-    {
-      digitalWrite(PWM,LOW);  
-    }  
+      CurrentPOS = analogRead(POT);// read the analog sensor
+
+      if( (millis() - time) > 1000 )
+      {
+        newTargetFlag = true;
+        break;
+      }
+    }
+       
+    digitalWrite(PWM,LOW);   
+    delay(10); 
+    CurrentPOS = analogRead(POT);// read the analog sensor
   }
 }
 

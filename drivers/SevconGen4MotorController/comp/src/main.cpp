@@ -41,21 +41,24 @@ int main(int argc, char **argv)
 
     PIDController controller;
 
-    controller.Initialize(0.1, 0, 0, 300, -300, 0.1);
+    controller.Initialize(0.4, 0, 0, 100, -100, 0.1);
 
-    double processVal = can.ReadAngularVelocity();
+    double processVal = can.GetAngularVelocity();
     double setPoint = 200.0;
 
     for(int i = 0; i < 100; ++i)
     {
+        processVal = can.GetAngularVelocity();
+        std::cout<<"process val: "<<processVal<<std::endl;
         double inc = controller.Calculate(setPoint, processVal);
         processVal += inc;
+        std::cout<<"inc + val: "<<processVal<<std::endl;
         can.SendSpeed((int)processVal);
 
         usleep(400000); //400 milliseconds
     }
 
-    usleep(40000000);
+    usleep(400000);
     can.SendSpeed(0);
 }
 

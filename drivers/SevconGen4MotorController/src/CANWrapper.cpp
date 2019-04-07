@@ -19,9 +19,9 @@
  * CONSTANTS
  ****************************************/
 
-constexpr int SleepTime = 100;
+constexpr int SleepTime = 1000;
 constexpr uint16_t MaxTorque = 1000;
-constexpr uint64_t MaxTimeout = 1000;
+constexpr uint64_t MaxTimeout = 10000;
 
 /****************************************
  * CLASS IMPLEMENTATION
@@ -31,8 +31,10 @@ CANWrapper::CANWrapper()
 {
     this->_fd = -1;
     this->_isRunning = false;
+    this->_stateSet = false;
     this->_state = IAV::STOPPED;
     this->_timeout = 0.0;
+    this->_angularVelocity = 0.0;
 }
 
 CANWrapper::~CANWrapper()
@@ -77,17 +79,30 @@ CANWrapper::initializeMotorController()
 {
     sevconLogin();
 
-    checkOperationState();
-    while(_state != IAV::OP && _isRunning)
+    while(!_stateSet)
     {
-        if (_state == IAV::PREOP)
-        {
-            forceToOP();
-            std::cout<<"attempting to initialize operation state"<<std::endl;
-            break;
-        }
-        usleep(1000);
         checkOperationState();
+        usleep(10000);
+    }
+
+    if(_state == IAV::OP)
+    {
+        std::cout<<"In OP, faking out RPDO"<<std::endl;
+        rpdoFakeOut();
+    }
+    else
+    {
+        while(_state != IAV::OP)
+        {
+            if (_state == IAV::PREOP)
+            {
+                forceToOP();
+                std::cout<<"attempting to initialize operation state"<<std::endl;
+                break;
+            }
+            usleep(1000);
+            checkOperationState();
+        }
     }
 
     usleep(100000);
@@ -126,6 +141,7 @@ void
 CANWrapper::listenThread(CANWrapper* wrapper)
 {
     int got;
+    int count = 0;
     while(wrapper->_isRunning)
     {
         got = read(wrapper->_fd, &wrapper->_rx, sizeof(IAV::CANmsg));
@@ -156,6 +172,18 @@ CANWrapper::listenThread(CANWrapper* wrapper)
                     if((uint64_t)((int64_t)ms.count() - wrapper->_timeout) > MaxTimeout)
                     {
                         wrapper->_state = IAV::OFF;
+                        std::cout<<"[ERROR]: Motor Controller state set to off, Timeout has been reached"<<std::endl;
+                        wrapper->_stateSet = false;
+                    }
+                }
+
+                if(wrapper->_rx.data_length == 8)
+                {
+                    if((wrapper->_rx.identity == IAV::TSDO) && (wrapper->_rx.data[1] == (IAV::ANGULAR_VELOCITY & 0xFF)) && (wrapper->_rx.data[2] == (IAV::ANGULAR_VELOCITY >> 8)))
+                    {
+                        std::vector<uint8_t> data;
+                        data.assign(wrapper->_rx.data+4, wrapper->_rx.data+8);
+                        wrapper->_angularVelocity = wrapper->convertHextoInt(data);
                     }
                 }
             }
@@ -168,6 +196,13 @@ CANWrapper::listenThread(CANWrapper* wrapper)
         }
 
         usleep(SleepTime);
+
+        count ++;
+        if(count == 20)
+        {
+            wrapper->readAngularVelocity();
+            count = 0;
+        }
     }
 }
 
@@ -199,8 +234,8 @@ CANWrapper::initializeOperationState()
     SendMessage(msg);
 }
 
-int
-CANWrapper::ReadAngularVelocity()
+void
+CANWrapper::readAngularVelocity()
 {
     IAV::CANmsg msg;
     msg.identity = IAV::RSDO;
@@ -217,18 +252,20 @@ CANWrapper::ReadAngularVelocity()
     msg.data[6] = 0x00;
     msg.data[7] = 0x00;
 
-    IAV::CANmsg rx;
-    int got = read(_fd, &rx, sizeof(IAV::CANmsg));
-    if((got > 0) && (rx.data_length == 8))
-    {
-        if((rx.identity == IAV::TSDO) && (msg.data[1] == (IAV::ANGULAR_VELOCITY & 0xFF)) && (msg.data[2] == (IAV::ANGULAR_VELOCITY >> 8)))
-        {
-            std::vector<uint8_t> data;
-            data.assign(rx.data+4, rx.data+8);
-            return convertHextoInt(data);
-        }
-    }
-    return -1;
+    SendMessage(msg);
+
+//    IAV::CANmsg rx;
+//    int got = read(_fd, &rx, sizeof(IAV::CANmsg));
+//    if((got > 0) && (rx.data_length == 8))
+//    {
+//        if((rx.identity == IAV::TSDO) && (rx.data[1] == (IAV::ANGULAR_VELOCITY & 0xFF)) && (rx.data[2] == (IAV::ANGULAR_VELOCITY >> 8)))
+//        {
+//            std::vector<uint8_t> data;
+//            data.assign(rx.data+4, rx.data+8);
+//            return convertHextoInt(data);
+//        }
+//    }
+//    return -1;
 }
 
 int
@@ -264,6 +301,12 @@ CANWrapper::forceToOP()
     checkReadMsg();
     usleep(40000);
 
+    rpdoFakeOut();
+}
+
+void
+CANWrapper::rpdoFakeOut()
+{
     IAV::CANmsg msg2;
     msg2.bufferFull = false;
     msg2.syncFlag = false;
@@ -273,7 +316,7 @@ CANWrapper::forceToOP()
     msg2.data[1] = 0x00;
     msg2.data[2] = 0x00;
 
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 20; ++i)
     {
         SendMessage(msg2);
         usleep(40000);
@@ -309,15 +352,19 @@ CANWrapper::checkOperationState()
             {
                 case(IAV::INIT):
                     _state = IAV::INIT;
+                   _stateSet = true;
                     break;
                 case(IAV::STOPPED):
                     _state = IAV::STOPPED;
+                    _stateSet = true;
                     break;
                 case(IAV::PREOP):
                     _state = IAV::PREOP;
+                    _stateSet = true;
                     break;
                 case(IAV::OP):
                     _state = IAV::OP;
+                    _stateSet = true;
                     break;
             }
         }
