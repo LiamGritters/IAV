@@ -23,7 +23,7 @@
  * CONSTANTS
  ****************************************/
 
-constexpr float DefaultVelocityRate = 10.0;
+constexpr float DefaultVelocityRate = 1.0;
 
 /****************************************
  * Main
@@ -45,7 +45,7 @@ int main()
 
     while(controller.IsRunning())
     {
-        msg.turningAngle = controller.GetTurningRate()*DefaultVelocityRate;
+        msg.turningAngle = controller.GetTurningRate(); //*DefaultVelocityRate;
         msg.velocity = controller.GetSpeedLevel()*DefaultVelocityRate;
 
         lcm.publish(ControllerChannel, &msg);

@@ -13,13 +13,9 @@
 #include "CANWrapper.hpp"
 #include "ArduinoLinearActuatorDriver.hpp"
 
-#include "vehicle_controller_demand_t.hpp"
-#include "driveline_t.hpp"
+#include "ControlsManager.hpp"
 #include "LCMChannels.hpp"
 
-#include "LinearActuatorControlValues.hpp"
-
-#include <lcm/lcm-cpp.hpp>
 #include <string>
 #include <chrono>
 #include <iostream>
@@ -30,20 +26,20 @@
  ****************************************/
 
 //Speed Limit
-constexpr float MaxVelocityDemand = 2.0; // [m/s]
-constexpr float MaxVelocityDemandReverse = -2.0; // [m/s]
+constexpr float MaxVelocityDemand = 5.0; // [m/s]
+constexpr float MaxVelocityDemandReverse = -5.0; // [m/s]
 
 //Actuator Limits
-constexpr float MaxTurningAngle =  15.0; // deg
-constexpr float MinTurningAngle = -15.0; // deg
+constexpr float MaxTurningAngle =  25.0; // deg
+constexpr float MinTurningAngle = -25.0; // deg
 
 //PID Controller Parameters
-constexpr double Kp = 0.1;
+constexpr double Kp = 0.4;
 constexpr double Ki = 0.0;
 constexpr double Kd = 0.0;
 constexpr double MaxAllowableSpeedChange = 100.0;
 constexpr double MinAllowableSpeedChange = -100.0;
-constexpr double DeltaTime = 0.1;
+constexpr double DeltaTime = 0.05;
 
 //Motor Controller CAN Parameters
 const std::string CanDevice = "can0"; //CAN port
@@ -54,7 +50,7 @@ const std::string DeviceFileName = "/dev/ttyACM0"; //usb Port
 //Motor Constants
 constexpr float GearReduction = 1.f/8.f;
 constexpr float RPMToRadsPerSec = 2.f*M_PI/60.f;
-constexpr float WheelRadius = 0.4572; // meters
+constexpr float WheelRadius = 0.4572/2.0; // meters
 
 /****************************************
  * CLASSES
@@ -146,71 +142,102 @@ convertLinearActuatorPositionToTurningAngle(float position)
     return turningAngle;
 }
 
+bool
+checkActuatorPosition(float position)
+{
+    const int numActuatorPositions = ActuatorPositions.size() - 1;
+    if(position > ActuatorPositions[numActuatorPositions]) return false;
+    if(position < ActuatorPositions[0]) return false;
+    return true;
+}
+
 /****************************************
  * Main
  ****************************************/
 
 int main()
 {
-    PIDController controller;
+    PIDController motorController;
     CANWrapper motor;
     ArduinoLinearActuatorDriver actuator;
 
-    if(!controller.Initialize(Kp, Ki, Kd, MaxAllowableSpeedChange, MinAllowableSpeedChange, DeltaTime) ||
-       !motor.Initialize(CanDevice) ||
-       !actuator.Initialize(DeviceFileName))
+    ControlsManager controlsManager;
+    if(!controlsManager.Initialize())
     {
-        std::cout<<"[ERROR]: could not initialize one or more components"<<std::endl;
-        return false;
+        std::cout<<"[ERROR]: could not initialize controls manager"<<std::endl;
+        return -1;
     }
 
     lcm::LCM lcm;
-    if(!lcm.good()) return 1;
-
-    ReceiveControllerInputs controlInputs;
-    lcm.subscribe(ControllerChannel, &ReceiveControllerInputs::HandleControlInputsMessage, &controlInputs);
-    lcm.handle();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    motor.Start();
-    actuator.Start();
+    if(!lcm.good())
+    {
+        std::cout<<"LCM could not start"<<std::endl;
+        return -1;
+    }
 
     iav_lcm::driveline_t msg;
     msg.enabled = true;
     msg.name = "driveline";
 
+    if(!motorController.Initialize(Kp, Ki, Kd, MaxAllowableSpeedChange, MinAllowableSpeedChange, DeltaTime) ||
+       !motor.Initialize(CanDevice) ||
+       !actuator.Initialize(DeviceFileName))
+    {
+        std::cout<<"[ERROR]: could not initialize one or more components"<<std::endl;
+        return -1;
+    }
+
+    motor.Start();
+
+    for(int i = 0; i < 10; ++i) //must put motor into operable state by sending minimal speed command
+    {
+        motor.SendSpeed(30);
+        usleep(40000);
+    }
+    motor.SendSpeed(0);
+
+    controlsManager.Start();
+    actuator.Start();
     uint64_t timeStamp = (uint64_t)(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
 
-    while(controlInputs.enabled)
+    while(controlsManager.IsRunning())
     {
-        lcm.handle();
-
-        if((motor.IsRunning()) && (actuator.IsRunning()) && (motor.GetMotorControllerState() != IAV::OFF))
+        if((motor.IsRunning()) && (actuator.IsRunning()))
         {
             //Convert velocity demand to motor velocity
-            float velocityDemand = controlInputs.velocity;
+            float velocityDemand = controlsManager.GetVelocity();
             velocityDemand = (velocityDemand > MaxVelocityDemand) ? MaxVelocityDemand : velocityDemand;//Limit input speed, for safety ->change later
             velocityDemand = (velocityDemand < MaxVelocityDemandReverse) ? MaxVelocityDemandReverse : velocityDemand;
 
-            float turningAngle = controlInputs.turningAngle;
+            float turningAngle = controlsManager.GetTurningAngle();
             turningAngle = (turningAngle > MaxTurningAngle) ? MaxTurningAngle : turningAngle;
             turningAngle = (turningAngle < MinTurningAngle) ? MinTurningAngle : turningAngle;
 
             const float motorDemand = convertVehicleSpeedToMotorSpeed(velocityDemand);
             const float actuatorPositionDemand = convertTurningAngleToLinearActuatorPosition(turningAngle);
 
-            double velocity = motor.ReadAngularVelocity();
-            const double incVel = controller.Calculate(motorDemand, velocity);
-            velocity += incVel; //new velocity
+            std::cout<<"vel: "<<velocityDemand<<", act: "<<actuatorPositionDemand<<std::endl;
 
-            double actuatorPosition = actuator.GetActuactorPosition();
-            const double incPos = controller.Calculate(actuatorPositionDemand, actuatorPosition);
-            actuatorPosition += incPos; //new actuator position
+            if((motor.GetMotorControllerState() != IAV::OFF))
+            {
+                double velocity = motor.GetAngularVelocity();
+                std::cout<<"read angular velocity: "<<velocity<<std::endl;
+                const double incVel = motorController.Calculate(motorDemand, velocity);
+                velocity += incVel; //new velocity
 
-            motor.SendSpeed((int)velocity);
-            actuator.SendData("<sendingData," + std::to_string(actuatorPosition) + ">");
+                if(fabs(motorDemand) < 0.1)
+                {
+                    velocity = 0;
+                }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                motor.SendSpeed((int)velocity);
+            }
+            else
+            {
+                std::cout<<"Motor Controller is OFF"<<std::endl;
+            }
+
+            actuator.SendData("<act," + std::to_string(actuatorPositionDemand) + ">");
 
             const uint64_t newTimestamp = (uint64_t)(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
             const uint64_t changeInTime = newTimestamp - timeStamp;
@@ -218,9 +245,11 @@ int main()
 
             msg.timestamp = newTimestamp;
             msg.enabled = true;
-            msg.speed = convertMotorSpeedToVehicleSpeed(motor.ReadAngularVelocity());
+            msg.speed = convertMotorSpeedToVehicleSpeed(motor.GetAngularVelocity());
             msg.wheelAngle = convertLinearActuatorPositionToTurningAngle(actuator.GetActuactorPosition());
             msg.turningRate = msg.wheelAngle / changeInTime;
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
         else
         {
@@ -231,13 +260,26 @@ int main()
             msg.timestamp = timeStamp;
             msg.enabled = false;
 
-            std::cout<<"[ERROR]: Motor Controller or Actuator are not running"<<std::endl;
+            if(!motor.IsRunning())
+            {
+                std::cout<<"[ERROR]: Motor Controller is not running"<<std::endl;
+            }
+            if(!actuator.IsRunning())
+            {
+                std::cout<<"[ERROR]: Actuator is not running"<<std::endl;
+            }
         }
 
         lcm.publish(DrivelineChannel, &msg);
     }
 
+    std::cout<<"Controls Manager Stopped Running"<<std::endl;
+    controlsManager.Stop();
+    motor.Stop();
+    actuator.Stop();
+
     msg.enabled = false;
+    lcm.publish(DrivelineChannel, &msg);
 }
 
 

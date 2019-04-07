@@ -18,7 +18,7 @@
  * CONSTANTS
  ****************************************/
 
-
+constexpr float MaxTurningAngle = 25.0;
 
 /****************************************
  * CLASS IMPLEMENTATION
@@ -79,10 +79,10 @@ DirectionalController::controllerThread(DirectionalController *controller)
                 controller->_speedLevel--;
                 break;
             case KEY_LEFT:
-                controller->_turningRate = -1.0;
+                controller->_turningRate = -MaxTurningAngle;
                 break;
             case KEY_RIGHT:
-                controller->_turningRate = 1.0;
+                controller->_turningRate = MaxTurningAngle;
                 break;
             default:
                 refresh();

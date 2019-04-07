@@ -37,7 +37,6 @@ public:
     void ResetTurningRate() {_turningRate = 0;};
 
     inline float GetTurningRate() const {return _turningRate;};
-//    inline float GetVelocity() const {return _velocity;};
     inline int GetSpeedLevel() const {return _speedLevel;};
 
 private:
@@ -48,7 +47,6 @@ private:
 
     bool _isRunning;
 
-//    float _velocity;
     float _turningRate;
 
     int _speedLevel; // 1 to 9, with 9 being the fastest
