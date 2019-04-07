@@ -13,5 +13,6 @@ all:
 clean:
 
 	$(MAKE) clean -C ./UtilityFunctions
+	$(MAKE) clean -C ./PIDController
 
 	

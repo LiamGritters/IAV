@@ -18,6 +18,13 @@
 #include <chrono>
 
 /****************************************
+ * CONSTANTS
+ ****************************************/
+
+constexpr float MaxTurningAngle = 25.0;
+constexpr float DefaultTurningSpeed = 2.0;
+
+/****************************************
  * CLASS IMPLEMENTATION
  ****************************************/
 
@@ -114,7 +121,7 @@ WebotsSystemInterface::robotProcess(WebotsSystemInterface *sysInterface)
 void
 WebotsSystemInterface::handleMessage(const lcm::ReceiveBuffer *rbuf, const std::string &chan, const iav_lcm::vehicle_controller_demand_t *msg)
 {
-    this->_leftSpeed = (msg->velocity) + (msg->turningAngle);
-    this->_rightSpeed = (msg->velocity) - (msg->turningAngle);
+    this->_leftSpeed = (msg->velocity) + ((msg->turningAngle) / MaxTurningAngle)*DefaultTurningSpeed;
+    this->_rightSpeed = (msg->velocity) - ((msg->turningAngle) / MaxTurningAngle)*DefaultTurningSpeed;
 }
 

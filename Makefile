@@ -4,6 +4,7 @@
 
 all:	
 	$(MAKE) -C ./libraries
+	$(MAKE) -C ./drivers
 	$(MAKE) -C ./components
 
 	
@@ -13,4 +14,5 @@ all:
 
 clean:
 	$(MAKE) clean -C ./libraries
+	$(MAKE) clean -C ./drivers
 	$(MAKE) clean -C ./components
