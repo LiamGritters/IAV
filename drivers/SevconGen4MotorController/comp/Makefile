@@ -53,5 +53,5 @@ $(BIN)/$(TARGET): $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -f $(BUILD)/* 
-	rm -f $(BIN)/*  
+	rm -rf $(BUILD)/* 
+	rm -rf $(BIN)/*  
